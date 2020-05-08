@@ -49,27 +49,29 @@ def printBoard(shouldReveal):
   print('\n')
 
 def setupGame():
+  global bet
   for suit in suits:
     for num in nums:
       c = Card(suit, num)
       deck.append(c)
-  # bet = "NA"
-  # while bet == "NA":
-  #   bet = input("You have $%d. " % userPocket + "How much would you like to bet? $")
-  #   if not bet.isdigit():
-  #     print("Please enter a number.")
-  #     bet = "NA"
-  #   else:
-  #     bet = int(bet)
-  #     if bet > userPocket:
-  #       print("I'm sorry, it looks like you don't have that much. Please try again.")
-  #       bet = "NA" 
-  #     elif bet < 100:
-  #       print("I'm sorry, the minimum bet at this table is $100. Please try again.")
-  #       bet = "NA"
-  #     else:
-  #       print("You are betting %d" % bet)
-  #       time.sleep(1.5)
+  bet = "NA"
+  while bet == "NA":
+    bet = input("How much would you like to bet? $")
+    if not bet.isdigit():
+      print("Please enter a number.")
+      bet = "NA"
+    else:
+      bet = int(bet)
+      if bet > userPocket:
+        print("I'm sorry, it looks like you don't have that much. Please try again.")
+        bet = "NA" 
+      elif bet < 100:
+        print("I'm sorry, the minimum bet at this table is $100. Please try again.")
+        bet = "NA"
+      else:
+        bet = bet
+        print("You are betting %d" % bet)
+        time.sleep(1.5)
   hitPlayer(userHand)
   hitPlayer(dealerHand)
   hitPlayer(userHand)
@@ -77,9 +79,18 @@ def setupGame():
 
   printBoard(False)
 
+def cardComparator(card):
+  if card.num == 'A':
+    card.num = 11
+  elif isinstance(card.num, str):
+    card.num = 10
+  
+  return card.num
+
 def checkTotal(hand):
   total = 0
   face = ("J", "Q", "K")
+  hand.sort(key=cardComparator)
   for card in hand:
     num = card.num
     if card.num in range(2,11):
@@ -92,7 +103,8 @@ def checkTotal(hand):
       total += 1
   return total
 
-def checkDecision(decision):
+def checkDecision(decision, userPocket):
+  global bet
   if decision == 'hit':
     hitPlayer(userHand)
     time.sleep(2)
@@ -100,9 +112,10 @@ def checkDecision(decision):
 
     total = checkTotal(userHand)
     if total == 21:
-      print('n/You got 21! You win!')
+      print('\nYou got 21! You win!')
       winner = "user"
       userPocket += bet
+
       return True
     elif total > 21:
       print('\nYou bust! Your total is: %d' % total)
@@ -116,12 +129,12 @@ def checkDecision(decision):
     print('The dealer has %d' % dealerTotal)
     print('You have %d' % userTotal)
     if dealerTotal <= 21 and dealerTotal > userTotal:
-        print('\nYou lost!')
-        winner = "dealer"
-        userPocket += bet
+      print('\nYou lost!')
+      winner = "dealer"
+      userPocket -= bet
     elif dealerTotal == userTotal:
-          print('\nYou tied')
-          winner = "tie"
+      print('\nYou tied')
+      winner = "tie"
     while dealerTotal < userTotal:
       print('\nHitting Dealer...\n')
       hitPlayer(dealerHand)
@@ -154,11 +167,10 @@ def checkDecision(decision):
 # time.sleep(2)
 # print("It looks like you have $500 to play with...let's get started!")
 # time.sleep(1)
-userPocket = 
-setupGame()
-finished = False
-
 while userPocket > 100:
+  print("You have $%d" % userPocket)
+  setupGame()
+  finished = False
   while not finished:
     decision = input('Hit or stay?')
-    finished = checkDecision(decision)
+    finished = checkDecision(decision, userPocket)
